@@ -4,8 +4,11 @@ import JMemPool.IMemoryPool;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Simple memory pool implementation.<br>
@@ -47,6 +50,7 @@ public class SimpleMemoryPool implements IMemoryPool {
          * 0表示空闲，1表示占用，位图
          */
         long[] freeArray;
+        int globalPageNum;
 
         private static final int ARRAY_SIZE = 2048;
         private static final int BITS_PER_LONG = 64;
@@ -54,35 +58,11 @@ public class SimpleMemoryPool implements IMemoryPool {
 
 
         private Page(short level) {
-            buffer = ByteBuffer.allocateDirect(level*ARRAY_SIZE);
-            level = level;
+            buffer = ByteBuffer.allocateDirect((1<<level)*ARRAY_SIZE);
+            this.level = level;
             free = ARRAY_SIZE;
             freeArray = new long[BITMAP_SIZE];
             maxAllocIndex = 0;
-        }
-
-        protected Page new4BytePage() {
-            return new Page((short) 4);
-        }
-
-        protected Page new8BytePage() {
-            return new Page((short) 8);
-        }
-
-        protected Page new16BytePage() {
-            return new Page((short) 16);
-        }
-        protected Page new32BytePage() {
-            return new Page((short) 32);
-        }
-        protected Page new64BytePage() {
-            return new Page((short) 64);
-        }
-        protected Page new128BytePage() {
-            return new Page((short) 128);
-        }
-        protected Page new256BytePage() {
-            return new Page((short) 256);
         }
 
         protected int malloc(int size) {
@@ -104,9 +84,31 @@ public class SimpleMemoryPool implements IMemoryPool {
             return pack(allocIndex, size);
         }
 
-        protected void free(int index) {
+        protected void free(int pageOffset) {
+            int index = getIndex(pageOffset);
             clearBit(index);
             free ++;
+        }
+
+        protected byte[] get(int pageOffset) {
+            int index = getIndex(pageOffset);
+            int size = getSize(pageOffset);
+            int start = index << level;
+            byte[] result = new byte[size];
+            buffer.position(start);
+            buffer.get(result,0,size);
+            return result;
+        }
+
+        protected int put(int pageOffset, byte[] data) {
+            int index = getIndex(pageOffset);
+            int size = data.length;
+            int start = index << level;
+            buffer.position(start);
+            buffer.put(data);
+
+            int newPageOffset = pack(index,size);
+            return newPageOffset;
         }
 
         // 设置某个位置为已占用
@@ -178,25 +180,28 @@ public class SimpleMemoryPool implements IMemoryPool {
         public static int getSize(int packed) {
             return packed & SIZE_MASK;
         }
+
+        protected int usedBytes(){
+            return (ARRAY_SIZE-free)*(1<<level);
+        }
+
+        protected int usedBlock(){
+            return (ARRAY_SIZE-free);
+        }
     }
     List<Page> pages;
-    List<Page> level2Pages8k;
-    List<Page> level3Pages16k;
-    List<Page> level4Pages32k;
-    List<Page> level5Pages64k;
-    List<Page> level6Pages128k;
-    List<Page> level7Pages256k;
-    List<Page> level8Pages512k;
+    List<List<Page>> levelPages;
 
     public SimpleMemoryPool() {
         pages = new ArrayList<>();
-        level2Pages8k = new LinkedList<>();
-        level3Pages16k = new LinkedList<>();
-        level4Pages32k = new LinkedList<>();
-        level5Pages64k = new LinkedList<>();
-        level6Pages128k = new LinkedList<>();
-        level7Pages256k = new LinkedList<>();
-        level8Pages512k = new LinkedList<>();
+        List<Page> level2Pages8k = new LinkedList<>();
+        List<Page> level3Pages16k = new LinkedList<>();
+        List<Page> level4Pages32k = new LinkedList<>();
+        List<Page> level5Pages64k = new LinkedList<>();
+        List<Page> level6Pages128k = new LinkedList<>();
+        List<Page> level7Pages256k = new LinkedList<>();
+        List<Page> level8Pages512k = new LinkedList<>();
+        levelPages= Arrays.asList(level2Pages8k,level2Pages8k,level2Pages8k,level3Pages16k,level4Pages32k,level5Pages64k,level6Pages128k,level7Pages256k,level8Pages512k);
     }
 
     // 向上取整到2的幂次方的指数
@@ -204,32 +209,107 @@ public class SimpleMemoryPool implements IMemoryPool {
         if (size <= 0 || size > 255) {
             throw new IllegalArgumentException("Size must be between 1 and 255");
         }
-        // size <= 4 时返回2
         if (size <= 4) return 2;
 
-        // 计算大于等于size的最小2的幂的指数
-        return 8 - Integer.numberOfLeadingZeros(size - 1) & 0xFF;
+        int exp = 0;
+        int value = 1;
+        while (value < size) {
+            value <<= 1;
+            exp++;
+        }
+        return exp;
     }
 
     @Override
     public long malloc(int size) {
-        int level = ceilToPowerOf2Exponent(size);
+        int levelIndex = ceilToPowerOf2Exponent(size);
+        List<Page> level = levelPages.get(levelIndex);
+        Page freePage = level.parallelStream().filter(e->e.free>0).findFirst().orElseGet(()->{
+            Page page = new Page((short) levelIndex);
+            level.add(page);
+            pages.addLast(page);
+            page.globalPageNum = pages.size()-1;
+            return page;
+        });
+        int pageOffset = freePage.malloc(size);
+        return packData(1, freePage.globalPageNum,pageOffset);
+    }
 
-        return 0;
+    // 打包函数
+    public static long packData(int type, int pageNum, int offset) {
+        // 确保输入在合法范围内
+        type &= 0xF;  // 4位
+        pageNum &= 0xFFFFFF; // 24位
+        offset &= 0xFFFFF; // 20位
+
+        // 左移并组合
+        return ((long)type << 44) | ((long)pageNum << 20) | offset;
+    }
+
+    // 解包函数 - 获取类型
+    public static int getType(long packed) {
+        return (int)((packed >> 44) & 0xF);
+    }
+
+    // 解包函数 - 获取页号
+    public static int getPageNum(long packed) {
+        return (int)((packed >> 20) & 0xFFFFFF);
+    }
+
+    // 解包函数 - 获取偏移量
+    public static int getOffset(long packed) {
+        return (int)(packed & 0xFFFFF);
     }
 
     @Override
-    public void free(long address) {
-
+    public void free(long pointer) {
+        int pageNum = getPageNum(pointer);
+        int offset = getOffset(pointer);
+        Page page = pages.get(pageNum);
+        page.free(offset);
     }
 
     @Override
     public long put(long pointer, byte[] data) {
-        return 0;
+        int pageNum = getPageNum(pointer);
+        int offset = getOffset(pointer);
+        Page page = pages.get(pageNum);
+        page.put(offset,data);
+        return packData(pageNum,pageNum,offset);
     }
 
     @Override
     public long put(byte[] data) {
-        return 0;
+        long pointer = malloc(data.length);
+        return put(pointer,data);
+    }
+
+    @Override
+    public byte[] get(long pointer) {
+        int pageNum = getPageNum(pointer);
+        int offset = getOffset(pointer);
+        Page page = pages.get(pageNum);
+        return page.get(offset);
+    }
+
+    public long usedBytes() {
+        return pages.parallelStream().map(e -> (long) e.usedBytes()).collect(Collectors.summingLong(e -> e));
+    }
+
+    public long usedBlocks(){
+        return pages.parallelStream().map(e -> (long) e.usedBlock()).collect(Collectors.summingLong(e -> e));
+    }
+
+    public List<Long> levelUsedBytes() {
+         return levelPages.stream()
+                 .map(t -> t.parallelStream().map(e -> (long) e.usedBytes()).collect(Collectors.summingLong(e -> e)))
+                 .collect(Collectors.toList());
+
+    }
+
+    public List<Long> levelUsedBlocks(){
+        return levelPages.stream()
+                .map(t -> t.parallelStream().map(e -> (long) e.usedBlock()).collect(Collectors.summingLong(e -> e)))
+                .collect(Collectors.toList());
     }
 }
