@@ -204,21 +204,26 @@ public class SimpleMemoryPool implements IMemoryPool {
         levelPages= Arrays.asList(level2Pages8k,level2Pages8k,level2Pages8k,level3Pages16k,level4Pages32k,level5Pages64k,level6Pages128k,level7Pages256k,level8Pages512k);
     }
 
-    // 向上取整到2的幂次方的指数
+    /**
+     * 向上取整到2的幂次方的指数
+     *
+     * @param size 要计算指数的整数
+     * @return 大于或等于 size 的最小2的幂次方的指数
+     * @throws IllegalArgumentException 如果 size 小于等于0或大于256
+     */
     public static int ceilToPowerOf2Exponent(int size) {
-        if (size <= 0 || size > 255) {
-            throw new IllegalArgumentException("Size must be between 1 and 255");
+        // 检查 size 是否在合法的范围内，即大于0且小于等于256
+        if (size <= 0 || size > 256) {
+            // 如果 size 不在合法范围内，抛出 IllegalArgumentException 异常
+            throw new IllegalArgumentException("Size must be between 1 and 256");
         }
+        // 如果 size 小于等于4，直接返回2，因为2的2次方（即4）是大于等于1且小于等于4的最小2的幂次方
         if (size <= 4) return 2;
 
-        int exp = 0;
-        int value = 1;
-        while (value < size) {
-            value <<= 1;
-            exp++;
-        }
-        return exp;
+        // 使用位操作计算2的幂次方的指数
+        return 32 - Integer.numberOfLeadingZeros(size - 1);
     }
+
 
     @Override
     public long malloc(int size) {
