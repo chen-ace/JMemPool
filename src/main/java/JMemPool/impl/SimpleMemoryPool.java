@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Simple memory pool implementation.<br>
@@ -34,7 +33,7 @@ public class SimpleMemoryPool implements IMemoryPool {
         ByteBuffer buffer;
         /**
          * 页级别
-         * 该页存储的最大内存块大小
+         * 该页存储的最大内存块大小,即2^level
          */
         short level;
         /**
@@ -201,6 +200,7 @@ public class SimpleMemoryPool implements IMemoryPool {
         List<Page> level6Pages128k = new LinkedList<>();
         List<Page> level7Pages256k = new LinkedList<>();
         List<Page> level8Pages512k = new LinkedList<>();
+        // level<2时，也放入level2Pages8k
         levelPages= Arrays.asList(level2Pages8k,level2Pages8k,level2Pages8k,level3Pages16k,level4Pages32k,level5Pages64k,level6Pages128k,level7Pages256k,level8Pages512k);
     }
 
@@ -271,11 +271,24 @@ public class SimpleMemoryPool implements IMemoryPool {
 
     @Override
     public long put(long pointer, byte[] data) {
+        if(data.length > 255) {
+            throw new IllegalArgumentException("Data length must be between 0 and 255");
+        }
         int pageNum = getPageNum(pointer);
         int offset = getOffset(pointer);
         Page page = pages.get(pageNum);
+        if(data.length > (1<<page.level)) {
+            // 新数据长度大于原数据长度,且>原始页面的最大数据长度，需要重新在其他页面分配
+            free(pointer);
+            long new_p = malloc(data.length);
+            int newPageNum = getPageNum(new_p);
+            int newOffset = getOffset(new_p);
+            Page newPage = pages.get(newPageNum);
+            newPage.put(newOffset,data);
+            return packData(1,newPageNum,newOffset);
+        }
         page.put(offset,data);
-        return packData(pageNum,pageNum,offset);
+        return packData(1,pageNum,offset);
     }
 
     @Override
