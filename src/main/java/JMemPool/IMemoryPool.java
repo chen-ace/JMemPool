@@ -1,6 +1,6 @@
 package JMemPool;
 
-public interface IMemoryPool {
+public interface IMemoryPool extends AutoCloseable {
 
     long malloc(int size);
     void free(long pointer);

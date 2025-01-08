@@ -60,8 +60,21 @@ JMemPool is suitable for a variety of applications, including:
 
 ```java
 // Example usage (Illustrative)
-MemoryPool pool = new MemoryPool(1024 * 1024 * 100); // 100MB pool
-ByteBuffer buffer = pool.allocate(1024); // Allocate 1KB
-// ... use the buffer ...
-pool.free(buffer); // Free the buffer
+IMemoryPool pool = new SimpleMemoryPool();
+String s = "hello world";
+byte[] sBytes = s.getBytes(StandardCharsets.UTF_8);
+// malloc space
+long pointer = pool.malloc(sBytes.length);
+// put data to pool
+pool.put(pointer, sBytes);
+// update data in pool (maybe get a new pointer)
+pointer = pool.put(pointer, "hello JMemPool".getBytes(StandardCharsets.UTF_8));
+// get data from pool
+byte[] data = pool.get(pointer);
+String str = new String(data, StandardCharsets.UTF_8);
+        System.out.println(str);
+// free space
+        pool.free(pointer);
+// or put date directly
+long pointer2 = pool.put("hello world".getBytes(StandardCharsets.UTF_8));
 ```
