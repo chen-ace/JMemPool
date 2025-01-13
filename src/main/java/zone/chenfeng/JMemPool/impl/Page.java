@@ -1,4 +1,4 @@
-package JMemPool.impl;
+package zone.chenfeng.JMemPool.impl;
 
 public interface Page {
     int freeSize();

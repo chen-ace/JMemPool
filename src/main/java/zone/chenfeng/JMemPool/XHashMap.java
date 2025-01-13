@@ -1,4 +1,4 @@
-package JMemPool;
+package zone.chenfeng.JMemPool;
 
 import net.jpountz.xxhash.XXHash64;
 import net.jpountz.xxhash.XXHashFactory;

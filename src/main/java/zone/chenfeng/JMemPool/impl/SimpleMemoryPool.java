@@ -1,12 +1,10 @@
-package JMemPool.impl;
+package zone.chenfeng.JMemPool.impl;
 
-import JMemPool.IMemoryPool;
+import zone.chenfeng.JMemPool.IMemoryPool;
 
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static JMemPool.impl.Page.LITTLE_PAGE_TYPE;
 
 /**
  * Simple memory pool implementation.<br>

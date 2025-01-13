@@ -1,8 +1,8 @@
-package JMemPool;
+package zone.chenfeng.JMemPool;
 
 
-import JMemPool.impl.SimpleMemoryPool;
-import JMemPool.utils.BenchmarkUtils;
+import zone.chenfeng.JMemPool.impl.SimpleMemoryPool;
+import zone.chenfeng.JMemPool.utils.BenchmarkUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

@@ -1,10 +1,9 @@
-package JMemPool;
+package zone.chenfeng.JMemPool;
 
-import JMemPool.impl.SimpleMemoryPool;
+import zone.chenfeng.JMemPool.impl.SimpleMemoryPool;
 import net.jpountz.xxhash.XXHash32;
 import net.jpountz.xxhash.XXHashFactory;
 
-import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.Collection;
 import java.util.Iterator;

@@ -1,4 +1,4 @@
-package JMemPool;
+package zone.chenfeng.JMemPool;
 
 public interface IMemoryPool extends AutoCloseable {
 

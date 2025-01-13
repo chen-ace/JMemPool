@@ -1,6 +1,6 @@
-package JMemPool;
+package zone.chenfeng.JMemPool;
 
-import JMemPool.impl.SimpleMemoryPool;
+import zone.chenfeng.JMemPool.impl.SimpleMemoryPool;
 
 import java.nio.charset.StandardCharsets;
 
