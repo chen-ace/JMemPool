@@ -3,6 +3,7 @@ package zone.chenfeng.JMemPool;
 
 import zone.chenfeng.JMemPool.impl.SimpleMemoryPool;
 import zone.chenfeng.JMemPool.utils.BenchmarkUtils;
+import zone.chenfeng.JMemPool.utils.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -95,15 +96,7 @@ public class Main {
         try(SimpleMemoryPool pool = new SimpleMemoryPool()){
             List<String> strs = new ArrayList<>();
             List<Long> collect = Stream.iterate(0, i -> i + 1).limit(AMOUNT).map(inx -> {
-                // 随机字符串长度
-                int size = ThreadLocalRandom.current().nextInt(minSize, maxSize);
-                // 使用ThreadLocalRandom + ASCII字符
-                StringBuilder sb = new StringBuilder(size);
-                for(int i = 0; i < size; i++) {
-                    // 生成可见ASCII字符 (33-126)
-                    sb.append((char)(ThreadLocalRandom.current().nextInt(33, 127)));  // nextInt是前闭后开区间[33,127)
-                }
-                String str1 = sb.toString();
+                String str1 = StringUtils.randomString(minSize, maxSize);
                 strs.add(str1);
                 return pool.put(str1.getBytes(StandardCharsets.UTF_8));
             }).toList();

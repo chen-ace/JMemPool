@@ -1,5 +1,7 @@
 package zone.chenfeng.JMemPool;
 
+import zone.chenfeng.JMemPool.utils.StringUtils;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -24,8 +26,8 @@ public class SimpleTestClient {
         for (int i = 0; i < totalRequests; i++) {
             executor.submit(() -> {
                 try {
-                    String key = randomString(5, 20);
-                    String value = randomString(2, 60);
+                    String key = StringUtils.randomString(5, 20);
+                    String value = StringUtils.randomString(2, 60);
                     String r = sendCommand("set " + key + " " + value);
                     System.out.println(r + ": " + value);
                 } catch (IOException e) {
@@ -41,17 +43,6 @@ public class SimpleTestClient {
         System.out.println((double) dt/(1000*1000*1000));
     }
 
-    public static String randomString(int minSize, int maxSize) {
-        // 随机字符串长度
-        int size = ThreadLocalRandom.current().nextInt(minSize, maxSize);
-        // 使用ThreadLocalRandom + ASCII字符
-        StringBuilder sb = new StringBuilder(size);
-        for(int i = 0; i < size; i++) {
-            // 生成可见ASCII字符 (33-126)
-            sb.append((char)(ThreadLocalRandom.current().nextInt(33, 127)));  // nextInt是前闭后开区间[33,127)
-        }
-        return sb.toString();
-    }
 
     private static String sendCommand(String command) throws IOException {
         // 每次执行命令建立新连接

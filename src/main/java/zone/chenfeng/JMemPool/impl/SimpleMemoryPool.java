@@ -68,7 +68,7 @@ public class SimpleMemoryPool implements IMemoryPool{
         }
 
         private LittlePage(short level) {
-            buffer = ByteBuffer.allocate((1<<level)*ARRAY_SIZE);
+            buffer = ByteBuffer.allocateDirect((1<<level)*ARRAY_SIZE);
             this.level = level;
             free = ARRAY_SIZE;
             freeArray = new long[BITMAP_SIZE];
