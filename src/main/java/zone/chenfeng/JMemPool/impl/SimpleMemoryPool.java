@@ -378,7 +378,7 @@ public class SimpleMemoryPool implements IMemoryPool{
             Page freeLittlePage = level.parallelStream().filter(e -> e.freeSize() > 0).findFirst().orElseGet(() -> {
                 LittlePage page = new LittlePage((short) levelIndex);
                 level.add(page);
-                pages.addLast(page);
+                pages.add(page);
                 page.setGlobalPageNum(pages.size() - 1);
                 return page;
             });
@@ -389,7 +389,7 @@ public class SimpleMemoryPool implements IMemoryPool{
             HugePage freeHugePage = hugeDataPages.parallelStream().filter(e -> e.freeSize() > 0).findFirst().orElseGet(() -> {
                 HugePage page = new HugePage();
                 hugeDataPages.add(page);
-                pages.addLast(page);
+                pages.add(page);
                 page.setGlobalPageNum(pages.size()-1);
                 return page;
             });

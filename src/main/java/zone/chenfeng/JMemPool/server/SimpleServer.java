@@ -1,6 +1,6 @@
 package zone.chenfeng.JMemPool.server;
 
-import zone.chenfeng.JMemPool.StringMap;
+import zone.chenfeng.JMemPool.collections.StringMap;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

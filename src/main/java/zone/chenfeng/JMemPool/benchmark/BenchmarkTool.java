@@ -83,7 +83,7 @@ public class BenchmarkTool {
         String value = StringUtils.randomString(valueMinSize,valueMaxSize);
 
         for (int i = 0; i < requestPerThread; i++) {
-            String key = "key-" + Thread.currentThread().threadId() + "-" + i;
+            String key = "key-" + Thread.currentThread().getId() + "-" + i;
 
             long start = System.nanoTime();
             try {

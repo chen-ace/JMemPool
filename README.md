@@ -52,7 +52,7 @@ JMemPool is suitable for a variety of applications, including:
 
 ```xml
 <dependency>
-    <groupId>your.group.id</groupId>
+    <groupId>zone.chenfeng</groupId>
     <artifactId>jmem-pool</artifactId>
     <version>1.0.0</version>
 </dependency>

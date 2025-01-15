@@ -1,4 +1,4 @@
-package zone.chenfeng.JMemPool;
+package zone.chenfeng.JMemPool.collections;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -48,7 +48,7 @@ JMemPool 适用于各种应用程序，包括：
 
 ```xml
 <dependency>
-    <groupId>feng</groupId>
+    <groupId>zone.chenfeng</groupId>
     <artifactId>jmem-pool</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -72,4 +72,5 @@ String str = new String(data, StandardCharsets.UTF_8);
         pool.free(pointer);
 // or put date directly
 long pointer2 = pool.put("hello world".getBytes(StandardCharsets.UTF_8));
+
 ```
