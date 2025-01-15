@@ -7,6 +7,39 @@
     <groupId>zone.chenfeng</groupId>
     <artifactId>jmem-pool</artifactId>
     <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <!-- 项目基本信息 -->
+    <name>JMemPool</name>
+    <description>A high-performance off-heap memory pool for Java applications.</description>
+    <url>https://github.com/chen-ace/JMemPool</url>
+
+    <!-- 开发者信息 -->
+    <developers>
+        <developer>
+            <name>Addison</name>
+            <email>cfcz48@qq.com</email>
+            <organization>Personal</organization>
+            <organizationUrl>https://www.chenfeng.zone/</organizationUrl>
+        </developer>
+    </developers>
+
+    <!-- 许可证信息 -->
+    <!-- 许可证信息 -->
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <!-- SCM信息 -->
+    <scm>
+        <connection>scm:git:git://github.com/chen-ace/JMemPool.git</connection>
+        <developerConnection>scm:git:ssh://github.com:chen-ace/JMemPool.git</developerConnection>
+        <url>https://github.com/chen-ace/JMemPool</url>
+    </scm>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -46,6 +79,78 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- Source -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <!-- 注意这里使用verify阶段而不是package阶段 -->
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <!-- 如果使用 JDK 8 以上版本，需要添加下面配置 -->
+                    <source>17</source>
+                    <!-- 忽略 javadoc 严格检查 -->
+                    <doclint>none</doclint>
+                    <!-- 如果你的代码使用了中文注释，需要添加下面的配置 -->
+                    <charset>UTF-8</charset>
+                    <encoding>UTF-8</encoding>
+                    <docencoding>UTF-8</docencoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- GPG -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                        <configuration>
+                            <!-- 如果使用GPG 2.1及以上版本，需要以下配置 -->
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- 发布到 Maven 中央仓库 -->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.7.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                </configuration>
             </plugin>
         </plugins>
     </build>
