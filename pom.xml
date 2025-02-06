@@ -42,8 +42,8 @@
     </scm>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -58,6 +58,18 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>  <!-- 或更高版本 -->
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <compilerArgs>
+                        <arg>--enable-preview</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -102,7 +114,7 @@
                 <version>3.5.0</version>
                 <configuration>
                     <!-- 如果使用 JDK 8 以上版本，需要添加下面配置 -->
-                    <source>17</source>
+                    <source>21</source>
                     <!-- 忽略 javadoc 严格检查 -->
                     <doclint>none</doclint>
                     <!-- 如果你的代码使用了中文注释，需要添加下面的配置 -->
